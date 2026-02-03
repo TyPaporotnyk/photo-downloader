@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 import boto3
 import requests
+from requests.adapters import HTTPAdapter
 import pyarrow.dataset as ds
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -38,7 +39,12 @@ s3 = boto3.client(
 )
 
 session = requests.Session()
-
+adapter = HTTPAdapter(
+    pool_connections=MAX_WORKERS * 2,
+    pool_maxsize=MAX_WORKERS * 2,
+)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
 downloaded_count = 0
 skipped_count = 0
 failed_count = 0
